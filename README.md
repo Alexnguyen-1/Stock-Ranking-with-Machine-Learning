@@ -1,6 +1,6 @@
 # Market-Neutral Stock Ranking with Machine Learning
 
-Can machine learning pick stocks once you take the market out of the picture? This project ranks 104 large-cap U.S. stocks by their expected stock-specific return over the next month, then tests a beta-neutral long-short portfolio built from those rankings. The test is walk-forward (2019 to 2026, 93 monthly rebalances) and net of transaction costs.
+I (and I believe many other people) have always wondering whether machine learning can pick stocks? So I decided to test that with this project. The model ranks 104 large-cap U.S. stocks by their expected stock-specific return over the next month, then tests a beta-neutral long-short portfolio built from those rankings using walk-forward method (2019 - 2026, 93 monthly rebalances) and net of transaction costs.
 
 ## Key results
 
@@ -15,18 +15,17 @@ Can machine learning pick stocks once you take the market out of the picture? Th
 
 ![Growth of $1](results/equity_curves.png)
 
-## How the project evolved
+## Adjustment process
 
-The first version ranked stocks by their raw next-month return. It looked strong: about 11% a year with a Sharpe ratio similar to the market. A regression on SPY told a different story. The portfolio had a beta of about 0.45, and once market exposure was accounted for, its alpha was not significant. Looking at the features explained why: the strongest predictors were all risk measures (volatility, beta, biggest daily gain).
-In a strong bull market, the model had simply learned to buy high-beta stocks and short low-beta ones.Hedging that beta cut the return roughly in half.
+The first version ranked stocks by their raw next-month return. While it looked strong with about 11% a year with a Sharpe ratio similar to the market, a regression on SPY told a different story. The portfolio had a beta of about 0.45, and once market exposure was accounted for, its alpha was not significant. Looking at the features explained this as the strongest predictors were all risk measures (volatility, beta, biggest daily gain). In a strong bull market, the model had basically learned to buy high-beta stocks and short low-beta ones. Hence, hedging that beta cut the return roughly in half.
 
-So the final version changes the question. Instead of asking which stocks will go up the most, it asks which stocks will beat what their market exposure and sector would predict:
+So the final version changes the question from asking which stocks will go up the most to which stocks will beat what their market exposure and sector would predict:
 
 1. Residual target: next-month return minus beta × SPY's return, minus the stock's sector average.
 2. Beta-neutral portfolios: the long and short legs are sized so the portfolio's beta is zero.
 3. Alpha regression on SPY for every strategy, so market exposure can't hide in the results.
 
-The chart below shows the problem clearly: features that looked predictive against raw returns lose most of their signal once beta and sector are removed.
+The chart below shows the problem clearly of how features that looked predictive against raw returns lose most of their signal once beta and sector are removed.
 
 ![Feature IC before and after removing beta and sector](results/feature_ic.png)
 
@@ -53,7 +52,7 @@ The chart below shows the problem clearly: features that looked predictive again
 
 **Evaluation.** Monthly Information Coefficient (rank correlation between predictions and actual residual returns), quintile spreads, and portfolio statistics including alpha and beta from a regression on SPY.
 
-## How I checked the pipeline
+## Check the pipeline
 
 - Placebo test on random-walk prices. During development I ran the whole pipeline on simulated prices where nothing is predictable. The models' ICs came out close to zero, which shows no information from the future leaks into the predictions.
 - Leftover beta. The placebo test also showed the "beta-neutral" portfolios still had some market exposure when hedged with a 63-day beta. Short-window betas are noisy: stocks with very high or very low estimates usually have a true beta closer to 1. Hedging with a 252-day beta shrunk toward 1 (Blume adjustment) fixed it.
@@ -74,7 +73,7 @@ The chart below shows the problem clearly: features that looked predictive again
 
 None of the signals is statistically significant on its own. The Random Forest's portfolio result comes mostly from the extremes of its ranking: the top quintile beat the bottom quintile by 0.67% a month in residual return, while the middle quintiles showed no clear pattern.
 
-## How it could be used
+## Application to portfolio management
 
 Because the strategy has almost no correlation with the market, it is more useful as a diversifying satellite next to an index fund than as a standalone portfolio. Blending it with SPY over the test period:
 
@@ -94,7 +93,7 @@ Adding the strategy lowered volatility and drawdowns and raised the Sharpe ratio
 - The signal faded recently: the Random Forest's IC was negative in 2024 and 2025.
 - Simplified trading: trades at the close, flat costs, no short-borrowing fees, no intra-month rebalancing.
 
-## What I would do next
+## Future management
 
 - Use a survivorship-free universe (historical index constituents).
 - Add point-in-time fundamental data (valuation, quality, earnings revisions).
@@ -110,7 +109,7 @@ Adding the strategy lowered volatility and drawdowns and raised the Sharpe ratio
 | `results/` | Tables (CSV) and charts (PNG) saved by the model |
 | `requirements.txt` | Python packages |
 
-## How to run
+## How to run this
 
 ```
 pip install -r requirements.txt
