@@ -1,0 +1,8 @@
+# Cached price data (re-downloaded automatically)
+data/
+
+# Python and Jupyter
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+venv/
